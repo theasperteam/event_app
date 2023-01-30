@@ -1,4 +1,6 @@
 import 'package:event_app/Usefull/Colors.dart';
+import 'package:event_app/screens/sign_in.dart';
+import 'package:event_app/screens/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +10,7 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: Splash(),
+    home: Signup(),
   ));
 }
 
@@ -24,6 +26,7 @@ class _SplashState extends State<Splash> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: mainColor,
         body: Column(

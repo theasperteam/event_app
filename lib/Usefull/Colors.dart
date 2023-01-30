@@ -1,6 +1,11 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import '../screens/sign_in.dart';
+
 
 
 Color mainColor = Color(0xFFF59779);
@@ -187,9 +192,48 @@ toaster(String msg){
       textColor: Colors.white,
       backgroundColor: mainColor);
 }
+Widget reusableTextField(String text, IconData icon, bool isPasswordType,
+    TextEditingController controller) {
+  return
+    Container(width:screenw/1,height: screenh/18,
+      child: TextField(
 
 
+      controller: controller,
+      obscureText: isPasswordType,
+      enableSuggestions: !isPasswordType,
+      autocorrect: !isPasswordType,
+      cursorColor: Colors.black,
+      style: TextStyle(
+          color: Colors.black, fontSize: 17),
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          icon,
+          color: Colors.black,
+        ),
+        labelText: text,
+        labelStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
+        filled: true,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        fillColor: mainColor,
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: const BorderSide(width: 0, style: BorderStyle.none)),
+      ),
+  ),
+    );
+}
+Widget fieldTitle(String title) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    child: Text(
+      title,
+      style: TextStyle(
+        fontSize: screenw / 24,
+        color: Colors.white
 
-
-
+      ),
+    ),
+  );
+}
 
