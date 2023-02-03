@@ -1,4 +1,7 @@
+
+
 import 'package:event_app/Usefull/Colors.dart';
+import 'package:event_app/screens/home.dart';
 import 'package:event_app/screens/sign_in.dart';
 import 'package:event_app/screens/sign_up.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +13,18 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: Signup(),
+    home: StreamBuilder
+      (stream: FirebaseAuth.instance.authStateChanges(),builder: (context,snapshot){
+        if(snapshot.hasData){
+          return Home();
+        }else {
+          return Signin();
+        }
+
+
+
+
+    })
   ));
 }
 
