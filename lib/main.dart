@@ -1,6 +1,9 @@
 
 
+import 'package:event_app/Backend/backend.dart';
+import 'package:event_app/Homes/HomeScreen.dart';
 import 'package:event_app/Usefull/Colors.dart';
+import 'package:event_app/Usefull/Functions.dart';
 import 'package:event_app/screens/home.dart';
 import 'package:event_app/screens/sign_in.dart';
 import 'package:event_app/screens/sign_up.dart';
@@ -9,22 +12,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async{
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: StreamBuilder
-      (stream: FirebaseAuth.instance.authStateChanges(),builder: (context,snapshot){
-        if(snapshot.hasData){
-          return Home();
-        }else {
-          return Signin();
-        }
-
-
-
-
-    })
+    // home:homeScreen(data: {},)
+    // home:Signin(),
+    home:Splash(),
   ));
 }
 
@@ -37,6 +30,26 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    Future.delayed(Duration(seconds: 3),(){
+      check();
+    });
+  }
+
+  check() async{
+    if(_auth.currentUser != null){
+      checker(context);
+    }
+    else{
+      navScreen(Signin(), context, true);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -62,6 +75,8 @@ class _SplashState extends State<Splash> {
       ),
     );
   }
+
+
 }
 
 
