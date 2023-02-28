@@ -50,7 +50,7 @@ dev_dependencies:
   firebase_auth: ^4.2.2
   firebase_core: ^2.4.1
   cloud_firestore: ^4.3.1
-  firebase_database: ^10.0.9
+  firebase_database: ^10.0.14
   firebase_storage: ^11.0.10
   flutter_launcher_icons: ^0.11.0
   shared_preferences: ^2.0.15
@@ -64,6 +64,8 @@ dev_dependencies:
   share_plus: ^6.2.0
   salomon_bottom_bar: ^3.3.1
   iconsax: ^0.0.8
+  modal_bottom_sheet: ^2.1.2
+  draggable_bottom_sheet: ^1.0.2
 
 
 

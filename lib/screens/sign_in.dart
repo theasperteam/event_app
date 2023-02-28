@@ -26,7 +26,6 @@ final formkey = GlobalKey<FormState>();
 FirebaseAuth _auth = FirebaseAuth.instance;
 final _messangerKey = GlobalKey<ScaffoldMessengerState>();
 
-
 class _SigninState extends State<Signin> {
   @override
   Widget build(BuildContext context) {
@@ -40,7 +39,6 @@ class _SigninState extends State<Signin> {
     return MaterialApp(
       scaffoldMessengerKey: _messangerKey,
       home: Scaffold(
-          resizeToAvoidBottomInset: false,
           backgroundColor: bgColor,
           body: Stack(
             children: [
@@ -154,12 +152,11 @@ class _SigninState extends State<Signin> {
                           onChanged: (text) {
                             password = text;
                           },
-                          validator: (value){
-                            if(value!.isEmpty){
-                              return("Please enter a password");
-                            }
-                            else if(value.length < 6){
-                              return("The Password length must be more than 6 characters");
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return ("Please enter a password");
+                            } else if (value.length < 6) {
+                              return ("The Password length must be more than 6 characters");
                             }
                           },
                         ),
@@ -264,17 +261,16 @@ class _SigninState extends State<Signin> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) => {
-          checker(context),
-          print('ho gya'),
-          setState(() {
-            // isHide = false;
-          }),
-        });
+                  checker(context),
+                  print('ho gya'),
+                  setState(() {
+                    // isHide = false;
+                  }),
+                });
       } on FirebaseAuthException catch (e) {
         if (e.code == "user-not-found") {
           setState(() {
             isHide = false;
-
           });
           Snacker("User not Found", _messangerKey);
         } else if (e.code == "wrong_password") {
@@ -283,18 +279,14 @@ class _SigninState extends State<Signin> {
           });
           Snacker("Wrong Password", _messangerKey);
           print('hello');
-
         } else {
           setState(() {
             isHide = false;
           });
           Snacker("Something went wrong", _messangerKey);
           print('hello');
-
         }
       }
     }
   }
-
-
 }

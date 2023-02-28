@@ -1,5 +1,3 @@
-
-
 import 'package:event_app/Backend/backend.dart';
 import 'package:event_app/Homes/HomeScreen.dart';
 import 'package:event_app/Usefull/Colors.dart';
@@ -10,17 +8,19 @@ import 'package:event_app/screens/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:event_app/Usefull/Colors.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
     // home:homeScreen(data: {},)
     // home:Signin(),
-    home:Splash(),
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(brightness: Brightness.dark, primarySwatch: Colors.cyan),
+    home: Splash(),
   ));
 }
-
 
 class Splash extends StatefulWidget {
   const Splash({Key? key}) : super(key: key);
@@ -30,25 +30,22 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 3),(){
+    Future.delayed(Duration(seconds: 3), () {
       check();
     });
   }
 
-  check() async{
-    if(_auth.currentUser != null){
+  check() async {
+    if (_auth.currentUser != null) {
       checker(context);
-    }
-    else{
+    } else {
       navScreen(Signin(), context, true);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +54,7 @@ class _SplashState extends State<Splash> {
       home: Scaffold(
         backgroundColor: mainColor,
         body: Column(
-          mainAxisSize:MainAxisSize.max,
+          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -66,7 +63,6 @@ class _SplashState extends State<Splash> {
                 Spacer(),
                 mainText("Avent", bgColor, 30.0, FontWeight.bold, 1),
                 Spacer(),
-
               ],
             ),
             mainText("ASPER", bgLight, 10.0, FontWeight.normal, 1),
@@ -75,8 +71,4 @@ class _SplashState extends State<Splash> {
       ),
     );
   }
-
-
 }
-
-

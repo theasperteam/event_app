@@ -1,12 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../screens/sign_in.dart';
-
-
 
 Color mainColor = Color(0xFFF59779);
 Color secColor = Color(0xFFFF774C);
@@ -18,8 +14,8 @@ Color transparent_overlay = Color(0xFFFFFF);
 String mainFont = 'mons';
 String mainFontLight = 'mons';
 
-
-AutoSizeText mainText(String text, Color c, double size, FontWeight w,int lines) {
+AutoSizeText mainText(
+    String text, Color c, double size, FontWeight w, int lines) {
   return AutoSizeText(
     text,
     textAlign: TextAlign.center,
@@ -30,14 +26,12 @@ AutoSizeText mainText(String text, Color c, double size, FontWeight w,int lines)
       fontSize: size,
       fontFamily: mainFont,
       fontWeight: w,
-
     ),
   );
 }
 
-
-
-AutoSizeText mainTextFAQS(String text, Color c, double size, FontWeight w,int lines) {
+AutoSizeText mainTextFAQS(
+    String text, Color c, double size, FontWeight w, int lines) {
   return AutoSizeText(
     text,
     textAlign: TextAlign.start,
@@ -48,15 +42,12 @@ AutoSizeText mainTextFAQS(String text, Color c, double size, FontWeight w,int li
       fontSize: size,
       fontFamily: mainFont,
       fontWeight: w,
-
     ),
   );
 }
 
-
-Text mainTextLeft(String text, Color c, double size, FontWeight w,int lines) {
+Text mainTextLeft(String text, Color c, double size, FontWeight w, int lines) {
   return Text(
-
     text,
     textAlign: TextAlign.start,
     maxLines: lines,
@@ -72,24 +63,20 @@ Text mainTextLeft(String text, Color c, double size, FontWeight w,int lines) {
   );
 }
 
-Text mainTextLight(String text, Color c, double size, FontWeight w,int lines) {
+Text mainTextLight(String text, Color c, double size, FontWeight w, int lines) {
   return Text(
-
     text,
     textAlign: TextAlign.center,
     maxLines: lines,
-
     style: TextStyle(
         color: c,
         letterSpacing: 0.5,
         fontSize: size,
         fontFamily: mainFontLight,
         fontWeight: w,
-        overflow: TextOverflow.ellipsis
-    ),
+        overflow: TextOverflow.ellipsis),
   );
 }
-
 
 class loader extends StatelessWidget {
   const loader({Key? key}) : super(key: key);
@@ -121,8 +108,7 @@ class loader extends StatelessWidget {
   }
 }
 
-
-Widget loaderss(bool a,BuildContext context){
+Widget loaderss(bool a, BuildContext context) {
   return Visibility(
       visible: a,
       child: Stack(
@@ -143,69 +129,71 @@ Widget loaderss(bool a,BuildContext context){
       ));
 }
 
-void Snacker(String title,GlobalKey<ScaffoldMessengerState> aa){
+void Snacker(String title, GlobalKey<ScaffoldMessengerState> aa) {
   final snackBar = SnackBar(
       elevation: 0,
       duration: Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
       backgroundColor: secColor,
-      content:Text(title) );
+      content: Text(title));
 
   aa.currentState?.showSnackBar(snackBar);
   // messangerKey.currentState?.showSnackBar(snackBar);
-
 }
 
-Widget notFound(bool a,BuildContext context){
+Widget notFound(bool a, BuildContext context) {
   return Visibility(
-    visible: a,
+      visible: a,
       child: Center(
         child: Container(
-    alignment: Alignment.center,
-    child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('Assets/notfound.png',width: 200.0,),
-          mainText("Nothing Found", Colors.white, 10.0, FontWeight.normal, 1),
-        ],
-    ),
-  ),
+          alignment: Alignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'Assets/notfound.png',
+                width: 200.0,
+              ),
+              mainText(
+                  "Nothing Found", Colors.white, 10.0, FontWeight.normal, 1),
+            ],
+          ),
+        ),
       ));
 }
 
-void snacker(String s, BuildContext c){
+void snacker(String s, BuildContext c) {
   ScaffoldMessenger.of(c).showSnackBar(SnackBar(
       elevation: 0,
       duration: Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
       backgroundColor: secColor,
-      content:
-  Text(s)));
+      content: Text(s)));
 }
 
-toaster(String msg){
-  Fluttertoast.showToast(msg: msg,
+toaster(String msg) {
+  Fluttertoast.showToast(
+      msg: msg,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
       textColor: Colors.white,
       backgroundColor: mainColor);
 }
+
 Widget reusableTextField(String text, IconData icon, bool isPasswordType,
     TextEditingController controller) {
-  return
-    Container(width:screenw/1,height: screenh/18,
-      child: TextField(
-
-
+  return Container(
+    width: screenw / 1,
+    height: screenh / 18,
+    child: TextField(
       controller: controller,
       obscureText: isPasswordType,
       enableSuggestions: !isPasswordType,
       autocorrect: !isPasswordType,
       cursorColor: Colors.black,
-      style: TextStyle(
-          color: Colors.black, fontSize: 17),
+      style: TextStyle(color: Colors.black, fontSize: 17),
       decoration: InputDecoration(
         prefixIcon: Icon(
           icon,
@@ -220,20 +208,16 @@ Widget reusableTextField(String text, IconData icon, bool isPasswordType,
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(width: 0, style: BorderStyle.none)),
       ),
-  ),
-    );
+    ),
+  );
 }
+
 Widget fieldTitle(String title) {
   return Container(
     margin: const EdgeInsets.only(bottom: 12),
     child: Text(
       title,
-      style: TextStyle(
-        fontSize: screenw / 24,
-        color: Colors.white
-
-      ),
+      style: TextStyle(fontSize: screenw / 24, color: Colors.white),
     ),
   );
 }
-
