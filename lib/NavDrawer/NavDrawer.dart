@@ -6,6 +6,12 @@ import 'package:flutter/material.dart';
 
 import 'package:iconsax/iconsax.dart';
 
+import 'nav_screen/about_us.dart';
+import 'nav_screen/contact_us.dart';
+import 'nav_screen/invite.dart';
+import 'nav_screen/privacy_policy.dart';
+import 'nav_screen/settings.dart';
+
 
 
 
@@ -21,7 +27,30 @@ class navigationDrawer extends StatefulWidget {
 class _navigationDrawerState extends State<navigationDrawer> {
 
 
+
+
   @override
+
+  void onAboutUs() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const AboutUs()));
+  }
+  void onContactUs() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const ContactUs()));
+  }
+  void onPrivacyPolicy() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const PrivacyPolicy()));
+  }
+  void onInvite() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const Invite()));
+  }
+  void onSettings() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const Settings()));
+  }
   void initState() {
     super.initState();
     if(widget.allData['photo'] != null){
@@ -93,8 +122,7 @@ class _navigationDrawerState extends State<navigationDrawer> {
           selectedColor: bgColor,
           title:
           mainTextLeft("About Us", Colors.white, 13.0, FontWeight.normal, 1),
-          onTap: () {
-          },
+          onTap:onAboutUs,
         ),
 
         ListTile(
@@ -106,9 +134,7 @@ class _navigationDrawerState extends State<navigationDrawer> {
           selectedColor: bgColor,
           title:
           mainTextLeft("Contact", Colors.white, 13.0, FontWeight.normal, 1),
-          onTap: () {
-
-          },
+          onTap:onContactUs,
         ),
 
         ListTile(
@@ -120,9 +146,7 @@ class _navigationDrawerState extends State<navigationDrawer> {
           selectedColor: bgColor,
           title:
           mainTextLeft("Privacy Policy", Colors.white, 13.0, FontWeight.normal, 1),
-          onTap: () {
-
-          },
+          onTap: onPrivacyPolicy,
         ),
 
         ListTile(
@@ -134,9 +158,7 @@ class _navigationDrawerState extends State<navigationDrawer> {
           selectedColor: bgColor,
           title:
           mainTextLeft("Invite", Colors.white, 13.0, FontWeight.normal, 1),
-          onTap: () {
-
-          },
+          onTap:onInvite,
         ),
 
         ListTile(
@@ -148,9 +170,7 @@ class _navigationDrawerState extends State<navigationDrawer> {
           selectedColor: bgColor,
           title:
           mainTextLeft("Settings", Colors.white, 13.0, FontWeight.normal, 1),
-          onTap: () {
-
-          },
+          onTap:onSettings,
         ),
 
         ListTile(
