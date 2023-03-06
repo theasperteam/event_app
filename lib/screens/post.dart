@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'package:event_app/Usefull/date.dart';
 import 'package:event_app/screens/sign_in.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../Backend/helper.dart';
 import '../Usefull/Colors.dart';
 import '../Usefull/Buttons.dart';
 import '../Usefull/Functions.dart';
@@ -10,6 +12,8 @@ import '../Usefull/time.dart';
 import 'package:draggable_bottom_sheet/draggable_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PostScreen extends StatefulWidget {
   const PostScreen({Key? key}) : super(key: key);
@@ -32,13 +36,36 @@ TextEditingController venue_controller = TextEditingController();
 TextEditingController seat_controller = TextEditingController();
 TextEditingController price_controller = TextEditingController();
 
+final databaseRef = FirebaseDatabase.instance.reference();
+
 class _PostScreenState extends State<PostScreen> {
   String event_date = "Select date";
   DateTime? date;
   String event_time = "Select time";
   TimeOfDay? time;
   String selectedCategory = "Online";
+  String selectedCategory1 = "Seminar";
   int index = 0;
+
+  String _text = "";
+  String _mail = "";
+
+  @override
+  void initState() {
+    super.initState();
+
+    HelperFunctions.getuserNameSharePreference().then((value) {
+      setState(() {
+        _text = value.toString();
+      });
+    });
+
+    HelperFunctions.getuserEmailSharePreference().then((value) {
+      setState(() {
+        _mail = value.toString();
+      });
+    });
+  }
 
   String getText() {
     if (date == null) {
@@ -49,6 +76,12 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   List<String> categoryList = ['Offline', 'Online'];
+  List<String> categoryList1 = [
+    'Hackathon',
+    'Seminar',
+    'Workshops',
+    'Cultural'
+  ];
 
   List<DropdownMenuItem<String>> getDropDownItems() {
     List<DropdownMenuItem<String>> dropDownItems = [];
@@ -64,6 +97,20 @@ class _PostScreenState extends State<PostScreen> {
     return dropDownItems;
   }
 
+  List<DropdownMenuItem<String>> getDropDownItems1() {
+    List<DropdownMenuItem<String>> dropDownItems1 = [];
+
+    for (int i = 0; i < categoryList1.length; i++) {
+      String cat = categoryList1[i];
+      var newItem = DropdownMenuItem(
+        child: Text(cat),
+        value: cat,
+      );
+      dropDownItems1.add(newItem);
+    }
+    return dropDownItems1;
+  }
+
   @override
   Widget build(BuildContext context) {
     screenh = MediaQuery.of(context).size.height;
@@ -77,10 +124,63 @@ class _PostScreenState extends State<PostScreen> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                          alignment: Alignment.topLeft,
-                          child: mainTextLeft(
-                              "Post", secColor, 30, FontWeight.w700, 1)),
+                      Row(
+                        children: [
+                          Container(
+                              alignment: Alignment.topLeft,
+                              child: mainTextLeft("Post Event", secColor, 30,
+                                  FontWeight.w700, 1)),
+                          Expanded(child: Container()),
+                          borderbtnsss('Post', () {
+                            if (desc_controller.text.isNotEmpty &&
+                                title_controller.text.isNotEmpty &&
+                                price_controller.text.isNotEmpty &&
+                                ((selectedCategory == "Offline" &&
+                                        venue_controller.text.isNotEmpty) ||
+                                    selectedCategory == "Online") &&
+                                seat_controller.text.isNotEmpty &&
+                                dur_controller.text.isNotEmpty &&
+                                event_date != "Select date" &&
+                                event_time != "Select time") {
+                              insertData(
+                                  'Bhopal',
+                                  generateRandomString(10),
+                                  desc_controller.text,
+                                  title_controller.text,
+                                  dur_controller.text,
+                                  venue_controller.text,
+                                  seat_controller.text,
+                                  price_controller.text,
+                                  event_date.toString(),
+                                  selectedCategory,
+                                  _text,
+                                  event_time.toString(),
+                                  selectedCategory1);
+                              event_date = "Select date";
+                              event_time = "Select time";
+                              selectedCategory1 = "Seminar";
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: bgColor,
+                                  content: Text(
+                                    "Please fill all the details",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  duration: Duration(seconds: 2),
+
+                                  width: 280.0, // Width of the SnackBar.
+                                  padding: const EdgeInsets.all(10),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(7.0),
+                                  ),
+                                ),
+                              );
+                            }
+                          }, secColor)
+                        ],
+                      ),
                       SizedBox(
                         height: 10,
                       ),
@@ -231,6 +331,25 @@ class _PostScreenState extends State<PostScreen> {
                       },
                       child: mainTextLeft(
                           "Location", mainColor, 15, FontWeight.w400, 1),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return catDialogBox();
+                            });
+                      },
+                      child: mainTextLeft(
+                          "Category", mainColor, 15, FontWeight.w400, 1),
                     ),
                   ],
                 ),
@@ -407,13 +526,13 @@ class _PostScreenState extends State<PostScreen> {
                   Expanded(child: Container()),
                   GestureDetector(
                     onTap: () {
-                      String txt = title_controller.text;
+                      String txt = controller.text;
                       if (txt == "") {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             backgroundColor: bgColor,
                             content: Text(
-                              "Please enter the title",
+                              "Please enter the ${key}",
                               style: TextStyle(color: Colors.white),
                             ),
                             duration: Duration(seconds: 2),
@@ -568,6 +687,74 @@ class _PostScreenState extends State<PostScreen> {
                     venue(isHide),
                     SizedBox(
                       height: isHide ? 40 : 5,
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: mainText(
+                              "cancel", mainColor, 15, FontWeight.w400, 1),
+                        ),
+                        Expanded(child: Container()),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            print(event_date);
+                          },
+                          child:
+                              mainText("ok", mainColor, 15, FontWeight.w400, 1),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )));
+    });
+  }
+
+  Widget catDialogBox() {
+    return StatefulBuilder(builder:
+        (BuildContext context, void Function(void Function()) setState) {
+      return Dialog(
+          child: Padding(
+              padding: EdgeInsets.all(30),
+              child: SizedBox(
+                height: 130,
+                width: 150,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Category',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: secColor),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    DropdownButton<String>(
+                      menuMaxHeight: 350,
+                      dropdownColor: Colors.grey,
+                      style: TextStyle(color: Colors.white, fontSize: 17),
+                      value: selectedCategory1,
+                      items: getDropDownItems1(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory1 = value as String;
+                          for (int i = 0; i < categoryList1.length; i++) {
+                            if (selectedCategory1 == categoryList1[i]) {
+                              index = i;
+                            }
+                          }
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      height: 20,
                     ),
                     Row(
                       children: [

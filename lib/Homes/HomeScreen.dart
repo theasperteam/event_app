@@ -3,7 +3,7 @@ import 'package:event_app/screens/post.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-
+import 'package:firebase_database/firebase_database.dart';
 import '../Usefull/Colors.dart';
 
 final GlobalKey<ScaffoldState> _key = GlobalKey();
