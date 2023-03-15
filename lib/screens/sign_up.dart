@@ -30,7 +30,7 @@ String fullname = " ";
 String pass = "";
 bool passwordVisible = true;
 FirebaseAuth _auth = FirebaseAuth.instance;
-final formkey = GlobalKey<FormState>();
+// final formkey = GlobalKey<FormState>();
 
 class _SignupState extends State<Signup> {
   bool isHide = false;

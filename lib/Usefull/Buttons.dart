@@ -17,10 +17,10 @@ class btnsss extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
+      // child: Padding(
+      //   padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
         child: mainText(title, text, 13.0, FontWeight.normal, 1),
-      ),
+      // ),
       style: ButtonStyle(
           foregroundColor: MaterialStateProperty.all<Color>(main),
           backgroundColor: MaterialStateProperty.all<Color>(main),
@@ -62,10 +62,10 @@ class borderbtnsss extends StatelessWidget {
 }
 
 class fullbtnsss extends StatelessWidget {
-  VoidCallback callback;
-  String title;
-  Color main;
-  Color text;
+    VoidCallback callback;
+    String title;
+    Color main;
+    Color text;
 
   fullbtnsss(this.title, this.callback, this.main, this.text);
 

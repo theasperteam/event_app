@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iconsax/iconsax.dart';
 
-import 'home.dart';
-
 class Signin extends StatefulWidget {
   const Signin({Key? key}) : super(key: key);
 
@@ -264,7 +262,6 @@ class _SigninState extends State<Signin> {
                   checker(context),
                   print('ho gya'),
                   setState(() {
-                    // isHide = false;
                   }),
                 });
       } on FirebaseAuthException catch (e) {
