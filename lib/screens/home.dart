@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
         onPressed: () async {
           await FirebaseAuth.instance.signOut();
           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: ((context) => Signin())));
+              MaterialPageRoute(builder: ((context) => logIn())));
         },
       )),
     );

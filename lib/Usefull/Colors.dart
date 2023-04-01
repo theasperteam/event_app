@@ -1,5 +1,7 @@
 
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,15 +10,31 @@ import '../screens/sign_in.dart';
 
 
 
-Color mainColor = Color(0xFFF59779);
-Color secColor = Color(0xFFFF774C);
-Color bgColor = Color(0xFF0C0C0D);
+Color mainColor = Color(0xFF4C7EFF);
+Color secColor = Color(0xFF6991FF);
+Color bgColor = Color(0xFF112454);
 Color bgLight = Color(0xFF383838);
+
+Color textColor = Color(0xFFFFFFFF);
+Color textDark = Color(0xFF000D31);
+
+Color lightGrey = Color(0xFFECECED);
+
+
+
+Color errorColor = Color(0xFFFF0062);
 
 Color transparent_overlay = Color(0xFFFFFF);
 
 String mainFont = 'mons';
 String mainFontLight = 'mons';
+
+List allBanners = ['Assets/b/b1.jpg',
+  'Assets/b/b2.jpg',
+  'Assets/b/b3.jpg',
+  'Assets/b/b4.jpg',
+  'Assets/b/b5.jpg',
+  'Assets/b/b6.jpg',];
 
 
 AutoSizeText mainText(String text, Color c, double size, FontWeight w,int lines) {
@@ -192,48 +210,63 @@ toaster(String msg){
       textColor: Colors.white,
       backgroundColor: mainColor);
 }
-Widget reusableTextField(String text, IconData icon, bool isPasswordType,
-    TextEditingController controller) {
-  return
-    Container(width:screenw/1,height: screenh/18,
-      child: TextField(
 
-
-      controller: controller,
-      obscureText: isPasswordType,
-      enableSuggestions: !isPasswordType,
-      autocorrect: !isPasswordType,
-      cursorColor: Colors.black,
-      style: TextStyle(
-          color: Colors.black, fontSize: 17),
-      decoration: InputDecoration(
-        prefixIcon: Icon(
-          icon,
-          color: Colors.black,
-        ),
-        labelText: text,
-        labelStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
-        filled: true,
-        floatingLabelBehavior: FloatingLabelBehavior.never,
-        fillColor: mainColor,
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: const BorderSide(width: 0, style: BorderStyle.none)),
+Widget banners(int index, String img, String file,double widht){
+  if(file != ""){
+    return Container(
+      width: widht,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15.0),
+        child: Image.file(File(file),
+        fit: BoxFit.cover,),
       ),
-  ),
     );
-}
-Widget fieldTitle(String title) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    child: Text(
-      title,
-      style: TextStyle(
-        fontSize: screenw / 24,
-        color: Colors.white
-
+  }
+  else if(img != ""){
+    return Container(
+      width: widht,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15.0),
+        child: Image.network(img,
+        fit: BoxFit.cover,),
       ),
+    );
+  }
+  else{
+    return Container(
+      width: widht,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15.0),
+        child: Image.asset(allBanners[index],
+        fit: BoxFit.cover,),
+      ),
+    );
+  }
+}
+
+List allAvatars = [
+"Assets/avatars/1.jpg",
+"Assets/avatars/2.jpg",
+"Assets/avatars/3.jpg",
+"Assets/avatars/4.jpg",
+"Assets/avatars/5.jpg",
+"Assets/avatars/6.jpg",
+"Assets/avatars/7.jpg",
+"Assets/avatars/8.jpg",
+"Assets/avatars/9.jpg",
+"Assets/avatars/10.jpg",
+"Assets/avatars/11.jpg",
+"Assets/avatars/13.jpg",
+"Assets/avatars/14.jpg",
+];
+
+Widget Avatar(int index, double radius){
+  return CircleAvatar(
+    radius: radius,
+    child: ClipOval(
+      child: Image.asset(allAvatars[index],fit: BoxFit.cover,),
     ),
   );
 }
+
 
