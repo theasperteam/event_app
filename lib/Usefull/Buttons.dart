@@ -128,28 +128,74 @@ class borderfullbtnsss extends StatelessWidget {
   }
 }
 
-class Gbutton extends StatelessWidget {
+class selectbtnsss extends StatelessWidget {
   VoidCallback callback;
   String title;
-  Color main;
+  Color bg;
   Color text;
 
-  Gbutton(this.title, this.callback,this.main, this.text);
+  selectbtnsss(this.title, this.callback,this.bg, this.text);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(width: screenw/1,
-      child: ElevatedButton.icon(
-          onPressed: () {},
-          icon: ImageIcon(AssetImage("Assets/images/google.png"),color: Colors.black,),
-          label: mainText(
-              "Continue with Google", Colors.white, 15, FontWeight.normal, 1), style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.all<Color>(main),
-          backgroundColor: MaterialStateProperty.all<Color>(main),
+    return ElevatedButton(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
+        child: Row(
+          children: [
+            Spacer(),
+            mainText(title, text, 13.0, FontWeight.normal, 1),
+            Spacer(),
+          ],
+        ),
+      ),
+      style: ButtonStyle(
+          foregroundColor:
+          MaterialStateProperty.all<Color>(bg),
+          backgroundColor:
+          MaterialStateProperty.all<Color>(bg),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                  side: BorderSide(color: main)))),),
+                  borderRadius: BorderRadius.circular(20.0),
+                  side: BorderSide(color: text, width: 2.0)))),
+      onPressed: callback,
     );
   }
 }
+
+class listbtnsss extends StatelessWidget {
+  VoidCallback callback;
+  String title;
+  Color bg;
+  Color text;
+
+  listbtnsss(this.title, this.callback,this.bg, this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
+        child: Row(
+          children: [
+            mainText(title, text, 13.0, FontWeight.normal, 1),
+          ],
+        ),
+      ),
+      style: ButtonStyle(
+          foregroundColor:
+          MaterialStateProperty.all<Color>(bg),
+          backgroundColor:
+          MaterialStateProperty.all<Color>(bg),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                  side: BorderSide(color: text, width: 2.0)))),
+      onPressed: callback,
+    );
+  }
+}
+
+
+
+

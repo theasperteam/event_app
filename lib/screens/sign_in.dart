@@ -1,257 +1,245 @@
 import 'package:event_app/Backend/backend.dart';
 import 'package:event_app/Usefull/Buttons.dart';
-import 'package:event_app/Usefull/Colors.dart';
 import 'package:event_app/screens/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iconsax/iconsax.dart';
 
-class Signin extends StatefulWidget {
-  const Signin({Key? key}) : super(key: key);
 
-  @override
-  State<Signin> createState() => _SigninState();
-}
 
-TextEditingController idController = TextEditingController();
-TextEditingController passController = TextEditingController();
-double screenh = 0;
-double screenw = 0;
+import '../Usefull/Colors.dart';
+import '../Usefull/Functions.dart';
+
 String email = "";
 String password = "";
-bool isHide = false;
-final formkey = GlobalKey<FormState>();
-FirebaseAuth _auth = FirebaseAuth.instance;
+
 final _messangerKey = GlobalKey<ScaffoldMessengerState>();
 
-class _SigninState extends State<Signin> {
+
+class logIn extends StatefulWidget {
+  logIn({Key? key}) : super(key: key);
+
+  @override
+  State<logIn> createState() => _logInState();
+}
+
+class _logInState extends State<logIn> {
+  final _auth = FirebaseAuth.instance;
+  User? user = FirebaseAuth.instance.currentUser;
+  bool isHide = false;
+  final formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    screenh = MediaQuery.of(context).size.height;
-    screenw = MediaQuery.of(context).size.width;
-    AlertDialog alert = AlertDialog(
-      title: Text("Sign in Failed!"),
-      content: Text("Wrong email or password."),
-      actions: [],
-    );
     return MaterialApp(
       scaffoldMessengerKey: _messangerKey,
       home: Scaffold(
-          backgroundColor: bgColor,
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Form(
-                    key: formkey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(
-                          height: screenh / 7,
-                        ),
-                        Container(
-                            alignment: Alignment.topLeft,
-                            child: mainTextLeft("Sign in", Colors.white, 30,
-                                FontWeight.w700, 1)),
-                        SizedBox(height: 70),
-                        fieldTitle("Email"),
-                        TextFormField(
-                          controller: idController,
-                          maxLength: 36,
-                          keyboardType: TextInputType.emailAddress,
-                          cursorColor: Colors.black,
-                          style: TextStyle(
-                            fontFamily: 'mons',
-                            fontSize: 15.0,
-                            color: Colors.black,
+        backgroundColor: bgColor,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 50.0,
+                      ),
+                      Container(
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
                           ),
-                          decoration: InputDecoration(
-                            labelText: "Enter Your Email",
-                            counterText: "",
-                            prefixIcon: Icon(
-                              Iconsax.user,
-                              color: Colors.black,
-                            ),
-                            fillColor: mainColor,
-                            filled: true,
-                            hintStyle:
-                                TextStyle(fontFamily: 'mons', color: secColor),
-                            labelStyle:
-                                TextStyle(color: Colors.black.withOpacity(0.5)),
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: const BorderSide(
-                                    width: 0, style: BorderStyle.none)),
-                          ),
-                          onChanged: (text) {
-                            email = text;
-                          },
-                          validator: (value) {
-                            bool emailValid = RegExp(
-                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(value!);
-                            if (!emailValid) {
-                              return ("Please enter a valid email");
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                        SizedBox(height: 30),
-                        fieldTitle("Password"),
-                        TextFormField(
-                          maxLength: 18,
-                          cursorColor: Colors.black,
-                          controller: passController,
-                          obscureText: !passwordVisible,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          style: TextStyle(
-                            fontFamily: 'mons',
-                            fontSize: 15.0,
-                            color: Colors.black,
-                          ),
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                passwordVisible
-                                    ? Iconsax.eye
-                                    : Iconsax.eye_slash,
-                                color: Colors.black,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  passwordVisible = !passwordVisible;
-                                });
-                              },
-                            ),
-                            labelText: "Enter your Password",
-                            counterText: "",
-                            prefixIcon: Icon(
-                              Iconsax.key,
-                              color: Colors.black,
-                            ),
-                            fillColor: mainColor,
-                            filled: true,
-                            hintStyle:
-                                TextStyle(fontFamily: 'mons', color: secColor),
-                            labelStyle:
-                                TextStyle(color: Colors.black.withOpacity(0.5)),
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: const BorderSide(
-                                    width: 0, style: BorderStyle.none)),
-                          ),
-                          onChanged: (text) {
-                            password = text;
-                          },
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return ("Please enter a password");
-                            } else if (value.length < 6) {
-                              return ("The Password length must be more than 6 characters");
-                            }
-                          },
-                        ),
-                        SizedBox(
-                          height: 50,
-                        ),
-                        SizedBox(
-                          width: screenw / 1,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              login(context);
-                            },
-                            child: mainText("Login", Colors.white, 18,
-                                FontWeight.normal, 1),
-                            style: ButtonStyle(
-                                foregroundColor:
-                                    MaterialStateProperty.all<Color>(secColor),
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(secColor),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(borderRadius),
-                                        side: BorderSide(color: secColor)))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Divider(
                           color: Colors.white,
-                          thickness: 1,
-                          height: 15,
-                          indent: 50,
-                          endIndent: 50,
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        SizedBox(
-                          width: screenw / 1,
-                          height: 50,
-                          child: ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: ImageIcon(
-                              AssetImage("Assets/images/google.png"),
-                              color: Colors.black,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0,vertical: 60.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                mainText("Sign in", bgColor, 30.0, FontWeight.bold, 1),
+                                SizedBox(
+                                  height: 50.0,
+                                ),
+                                mainText(" Email", textDark, 10.0, FontWeight.normal, 1),
+                                TextFormField(
+                                  keyboardType: TextInputType.emailAddress,
+                                  maxLength: 50,
+                                  style: TextStyle(
+                                      color: textDark,
+                                      fontSize: 13.0,
+                                      fontFamily: 'mons'),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    counterText: "",
+                                    fillColor: lightGrey,
+                                    prefixIcon: Icon(Iconsax.user,color: textDark,),
+                                    hintText: "Email",
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'mons',
+                                      fontSize: 13.0,
+                                      color: Colors.grey[500],
+                                    ),
+                                    errorStyle: TextStyle(
+                                      color: errorColor,
+                                      fontFamily: 'mons',
+                                      fontSize: 10.0,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(color: textColor,width: 0),
+                                      borderRadius: BorderRadius.circular(20.0),
+
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: textColor,
+                                        width: 0
+                                      ),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: errorColor,
+                                        width: 0
+                                      ),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                  ),
+                                  onChanged: (text) {
+                                    email = text;
+                                  },
+                                  validator: (value) {
+                                    bool emailValid = RegExp(
+                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                        .hasMatch(value!);
+                                    if (!emailValid) {
+                                      return ("Please enter a valid email");
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                ),
+                                SizedBox(
+                                  height: 15.0,
+                                ),
+                                mainText(" Password", textDark, 10.0, FontWeight.normal, 1),
+                                TextFormField(
+                                  keyboardType: TextInputType.visiblePassword,
+                                  maxLength: 18,
+                                  style: TextStyle(
+                                      color: textDark,
+                                      fontSize: 13.0,
+                                      fontFamily: 'mons'),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    counterText: "",
+                                    fillColor: lightGrey,
+                                    prefixIcon: Icon(Iconsax.key,color: textDark,),
+                                    hintText: "Password",
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'mons',
+                                      fontSize: 13.0,
+                                      color: Colors.grey[500],
+                                    ),
+                                    errorStyle: TextStyle(
+                                      color: errorColor,
+                                      fontFamily: 'mons',
+                                      fontSize: 10.0,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(color: textColor,width: 0),
+                                      borderRadius: BorderRadius.circular(20.0),
+
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: textColor,
+                                          width: 0
+                                      ),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: errorColor,
+                                          width: 0
+                                      ),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                  ),
+                                  onChanged: (text) {
+                                    password = text;
+                                  },
+                                  validator: (value) {
+                                    if(value!.isEmpty){
+                                      return("Please Enter a Password");
+                                    }
+                                    else if(value.length < 6){
+                                      return("Password Length must be more than 6 letters");
+                                    }
+                                  },
+                                ),
+                                SizedBox(
+                                  height: 5.0,
+                                ),
+                                Row(
+                                  children: [
+                                    Spacer(),
+                                    TextButton(
+                                        onPressed: () {
+                                          forgetPass();
+                                        },
+                                        child: mainText("Forget Password?", secColor, 13.0,
+                                            FontWeight.normal, 1))
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 10.0,
+                                ),
+
+                                    fullbtnsss("Login", () {login(context);}, bgColor, Colors.white),
+                              ],
                             ),
-                            label: mainText("Continue with Google",
-                                Colors.white, 15, FontWeight.normal, 1),
-                            style: ButtonStyle(
-                                foregroundColor:
-                                    MaterialStateProperty.all<Color>(secColor),
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(secColor),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(borderRadius),
-                                        side: BorderSide(color: secColor)))),
                           ),
                         ),
-                        Row(
-                          children: [
-                            SizedBox(width: screenw / 6),
-                            mainTextLeft("Don't have a account ?", Colors.white,
-                                15, FontWeight.normal, 1),
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Signup()));
-                                },
-                                child: Text(
-                                  "Sign up",
-                                  style:
-                                      TextStyle(color: mainColor, fontSize: 15),
-                                ))
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Row(
+                        children: [
+                          Spacer(),
+                          mainText("Didn't have an Account?", textColor, 13.0,
+                              FontWeight.normal, 1),
+                          TextButton(
+                              onPressed: () {
+                                goSignUp();
+                              },
+                              child: mainText("Sign Up", textColor, 13.0,
+                                  FontWeight.normal, 1)),
+                          Spacer()
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),
-              loaderss(isHide, context)
-            ],
-          )),
+            ),
+            loaderss(isHide, context),
+          ],
+        ),
+      ),
     );
   }
 
+
+  void forgetPass() {
+  }
+
   login(BuildContext context) async {
-    if (formkey.currentState!.validate()) {
+    if (formKey.currentState!.validate()) {
       setState(() {
         isHide = true;
       });
@@ -259,31 +247,38 @@ class _SigninState extends State<Signin> {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .then((uid) => {
-                  checker(context),
-                  print('ho gya'),
-                  setState(() {
-                  }),
-                });
+          checker(context),
+          setState(() {
+            // isHide = false;
+          }),
+        });
       } on FirebaseAuthException catch (e) {
         if (e.code == "user-not-found") {
           setState(() {
             isHide = false;
+
           });
           Snacker("User not Found", _messangerKey);
         } else if (e.code == "wrong_password") {
           setState(() {
             isHide = false;
           });
-          Snacker("Wrong Password", _messangerKey);
+          Snacker("Wronng Password", _messangerKey);
           print('hello');
+
         } else {
           setState(() {
             isHide = false;
           });
           Snacker("Something went wrong", _messangerKey);
           print('hello');
+
         }
       }
     }
+  }
+
+  void goSignUp() {
+    navScreen(signUp(), context, false);
   }
 }

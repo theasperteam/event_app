@@ -1,345 +1,294 @@
-import 'package:event_app/Usefull/Colors.dart';
-import 'package:event_app/screens/home.dart';
+import 'package:event_app/Usefull/Buttons.dart';
 import 'package:event_app/screens/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../Usefull/Buttons.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../Usefull/Colors.dart';
 import '../Usefull/Functions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iconsax/iconsax.dart';
+
+
+
+
 
 
 final _messangerKey = GlobalKey<ScaffoldMessengerState>();
 
 
-class Signup extends StatefulWidget {
-  const Signup({Key? key}) : super(key: key);
+class signUp extends StatefulWidget {
+  const signUp({Key? key}) : super(key: key);
 
   @override
-  State<Signup> createState() => _SignupState();
+  State<signUp> createState() => _signUpState();
 }
 
-TextEditingController idController = TextEditingController();
-TextEditingController passController = TextEditingController();
-TextEditingController usnameController = TextEditingController();
-double screenh = 0;
-double screenw = 0;
-String email = "";
-String fullname = " ";
-String pass = "";
-bool passwordVisible = true;
-FirebaseAuth _auth = FirebaseAuth.instance;
-// final formkey = GlobalKey<FormState>();
-
-class _SignupState extends State<Signup> {
+class _signUpState extends State<signUp> {
+  final _auth = FirebaseAuth.instance;
+  User? user = FirebaseAuth.instance.currentUser;
   bool isHide = false;
+  final formKey = GlobalKey<FormState>();
+  String name = "";
+  String email = "";
+  String password = "";
+  String username = "";
 
-  @override
-  void initState() {
-    passwordVisible = !passwordVisible;
-  }
 
   @override
   Widget build(BuildContext context) {
-    screenh = MediaQuery.of(context).size.height;
-    screenw = MediaQuery.of(context).size.width;
-    return MaterialApp(home:Scaffold(
-        backgroundColor: bgColor,
+    return MaterialApp(
+      scaffoldMessengerKey: _messangerKey,
+      home: Scaffold(
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
-            Form(
-              key: formkey,
+            SafeArea(
               child: SingleChildScrollView(
-                  child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: screenh / 7,
-                            ),
-                            Container(
-                                alignment: Alignment.topLeft,
-                                child: mainTextLeft("Sign up", Colors.white, 30,
-                                    FontWeight.w700, 1)),
-                            SizedBox(
-                              height: 30,
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                "Username",
-                                style: TextStyle(
-                                    fontSize: screenw / 24, color: Colors.white),
-                              ),
-                            ),
-                            TextFormField(
-                              controller: usnameController,
-                              key: ValueKey('fullname'),
-                              maxLength: 30,
-                              keyboardType: TextInputType.text,
-                              cursorColor: Colors.black,
-                              style: TextStyle(
+                padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 30.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 50.0,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          mainText("Sign up", bgColor, 30.0, FontWeight.bold, 1),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          mainText(" Username", textDark, 10.0, FontWeight.normal, 1),
+                          TextFormField(
+                            keyboardType: TextInputType.name,
+                            maxLength: 50,
+                            style: TextStyle(
+                                color: textDark,
+                                fontSize: 13.0,
+                                fontFamily: 'mons'),
+                            decoration: InputDecoration(
+                              filled: true,
+                              counterText: "",
+                              fillColor: lightGrey,
+                              prefixIcon: Icon(Iconsax.user,color: textDark,),
+                              hintText: "Username",
+                              hintStyle: TextStyle(
                                 fontFamily: 'mons',
-                                fontSize: 15.0,
-                                color: Colors.black,
+                                fontSize: 13.0,
+                                color: Colors.grey[500],
                               ),
-                              decoration: InputDecoration(
-                                counterText: "",
-                                labelText: "Enter Your Name",
-                                labelStyle:
-                                    TextStyle(color: Colors.black.withOpacity(0.5)),
-                                prefixIcon: Icon(
-                                  Iconsax.user,
-                                  color: Colors.black,
+                              errorStyle: TextStyle(
+                                color: errorColor,
+                                fontFamily: 'mons',
+                                fontSize: 10.0,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: textColor,width: 0),
+                                borderRadius: BorderRadius.circular(20.0),
+
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 0
                                 ),
-                                fillColor: mainColor,
-                                filled: true,
-                                floatingLabelBehavior: FloatingLabelBehavior.never,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    borderSide: const BorderSide(
-                                        width: 0, style: BorderStyle.none)),
+                                borderRadius: BorderRadius.circular(20.0),
                               ),
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return ("Please enter User name");
-                                }
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: errorColor,
+                                    width: 0
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                            onChanged: (text) {
+                              username = text;
+                            },
+                            validator: (value) {
+                             if(value!.isEmpty){
+                               return("Please enter Username");
+                             }
+                            },
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+
+                          mainText(" Email", textDark, 10.0, FontWeight.normal, 1),
+                          TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            maxLength: 50,
+                            style: TextStyle(
+                                color: textDark,
+                                fontSize: 13.0,
+                                fontFamily: 'mons'),
+                            decoration: InputDecoration(
+                              filled: true,
+                              counterText: "",
+                              fillColor: lightGrey,
+                              prefixIcon: Icon(Iconsax.user,color: textDark,),
+                              hintText: "Email",
+                              hintStyle: TextStyle(
+                                fontFamily: 'mons',
+                                fontSize: 13.0,
+                                color: Colors.grey[500],
+                              ),
+                              errorStyle: TextStyle(
+                                color: errorColor,
+                                fontFamily: 'mons',
+                                fontSize: 10.0,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: textColor,width: 0),
+                                borderRadius: BorderRadius.circular(20.0),
+
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 0
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: errorColor,
+                                    width: 0
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                            onChanged: (text) {
+                              email = text;
+                            },
+                            validator: (value) {
+                              bool emailValid = RegExp(
+                                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                  .hasMatch(value!);
+                              if (!emailValid) {
+                                return ("Please enter a valid email");
+                              } else {
                                 return null;
-                              },
-                              onSaved: (value) {
-                                setState(() {
-                                  fullname = value!;
-                                });
-                              },
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                "Email",
-                                style: TextStyle(
-                                    fontSize: screenw / 24, color: Colors.white),
-                              ),
-                            ),
-                            TextFormField(
-                              controller: idController,
-                              key: ValueKey('email'),
-                              maxLength: 36,
-                              keyboardType: TextInputType.emailAddress,
-                              cursorColor: Colors.black,
-                              style: TextStyle(
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          mainText(" Password", textDark, 10.0, FontWeight.normal, 1),
+                          TextFormField(
+                            keyboardType: TextInputType.visiblePassword,
+                            maxLength: 18,
+                            style: TextStyle(
+                                color: textDark,
+                                fontSize: 13.0,
+                                fontFamily: 'mons'),
+                            decoration: InputDecoration(
+                              filled: true,
+                              counterText: "",
+                              fillColor: lightGrey,
+                              prefixIcon: Icon(Iconsax.key,color: textDark,),
+                              hintText: "Password",
+                              hintStyle: TextStyle(
                                 fontFamily: 'mons',
-                                fontSize: 15.0,
-                                color: Colors.black,
+                                fontSize: 13.0,
+                                color: Colors.grey[500],
                               ),
-                              decoration: InputDecoration(
-                                labelText: "Enter Your Email",
-                                counterText: "",
-                                prefixIcon: Icon(
-                                  Iconsax.message_text,
-                                  color: Colors.black,
-                                ),
-                                fillColor: mainColor,
-                                filled: true,
-                                hintStyle:
-                                    TextStyle(fontFamily: 'mons', color: secColor),
-                                labelStyle:
-                                    TextStyle(color: Colors.black.withOpacity(0.5)),
-                                floatingLabelBehavior: FloatingLabelBehavior.never,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    borderSide: const BorderSide(
-                                        width: 0, style: BorderStyle.none)),
+                              errorStyle: TextStyle(
+                                color: errorColor,
+                                fontFamily: 'mons',
+                                fontSize: 10.0,
                               ),
-                              validator: (value) {
-                                bool emailValid = RegExp(
-                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                    .hasMatch(value!);
-                                if (!emailValid) {
-                                  return ("Please enter a valid email");
-                                } else {
-                                  return null;
-                                }
-                              },
-                              onSaved: (value) {
-                                setState(() {
-                                  email = value!;
-                                });
-                              },
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                "Password",
-                                style: TextStyle(
-                                    fontSize: screenw / 24, color: Colors.white),
-                              ),
-                            ),
-                            TextFormField(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: textColor,width: 0),
+                                borderRadius: BorderRadius.circular(20.0),
 
-                              key: ValueKey('password'),
-                              maxLength: 18,
-                              cursorColor: Colors.black,
-                              controller: passController,
-                              obscureText: !passwordVisible,
-                              enableSuggestions: false,
-                              autocorrect: false,
-                              style: TextStyle(
-                                fontFamily: 'mons',
-                                fontSize: 15.0,
-                                color: Colors.black,
                               ),
-                              decoration: InputDecoration(
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    passwordVisible
-                                        ? Iconsax.eye
-                                        : Iconsax.eye_slash,
-                                    color: Colors.black,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      passwordVisible = !passwordVisible;
-                                    });
-                                  },
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 0
                                 ),
-                                labelText: "Password",
-                                counterText: "",
-                                prefixIcon: Icon(
-                                  Iconsax.key,
-                                  color: Colors.black,
-                                ),
-                                fillColor: mainColor,
-                                filled: true,
-                                hintStyle:
-                                    TextStyle(fontFamily: 'mons', color: secColor),
-                                labelStyle:
-                                    TextStyle(color: Colors.black.withOpacity(0.5)),
-                                floatingLabelBehavior: FloatingLabelBehavior.never,
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    borderSide: const BorderSide(
-                                        width: 0, style: BorderStyle.none)),
+                                borderRadius: BorderRadius.circular(20.0),
                               ),
-                              validator: (value) {
-                                if (value!.length < 6) {
-                                  return 'Password is too short';
-                                } else {
-                                  return null;
-                                }
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: errorColor,
+                                    width: 0
+                                ),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                            onChanged: (text) {
+                              password = text;
+                            },
+                            validator: (value) {
+                              if(value!.isEmpty){
+                                return("Please Enter a Password");
+                              }
+                              else if(value.length < 6){
+                                return("Password Length must be more than 6 letters");
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            height: 5.0,
+                          ),
+
+                          SizedBox(
+                            height: 30.0,
+                          ),
+
+                          fullbtnsss("Create", () {signup(context);}, bgColor, Colors.white),
+                        ],
+                      ),
+
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Spacer(),
+                          mainText("Alreday have an Account?", mainColor, 13.0,
+                              FontWeight.normal, 1),
+                          TextButton(
+                              onPressed: () {
+                                goLogin();
                               },
-                              onSaved: (value) {
-                                setState(() {
-                                  password = value!;
-                                });
-                              },
-                            ),
-                            SizedBox(
-                              height: 50,
-                            ),
-                            SizedBox(
-                              width: screenw / 1,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  if (formkey.currentState!.validate()) {
-                                    formkey.currentState!.save();
-                                    FinalSignUp(context);
-                                  }
-                                },
-                                child: mainText("Create", Colors.white, 18,
-                                    FontWeight.normal, 1),
-                                style: ButtonStyle(
-                                    foregroundColor:
-                                        MaterialStateProperty.all<Color>(secColor),
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(secColor),
-                                    shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(borderRadius),
-                                            side: BorderSide(color: secColor)))),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Divider(
-                              color: Colors.white,
-                              thickness: 1,
-                              height: 15,
-                              indent: 50,
-                              endIndent: 50,
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            SizedBox(
-                              width: screenw / 1,
-                              height: 50,
-                              child: ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: ImageIcon(
-                                  AssetImage("Assets/images/google.png"),
-                                  color: Colors.black,
-                                ),
-                                label: mainText("Continue with Google",
-                                    Colors.white, 15, FontWeight.normal, 1),
-                                style: ButtonStyle(
-                                    foregroundColor:
-                                        MaterialStateProperty.all<Color>(secColor),
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(secColor),
-                                    shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(borderRadius),
-                                            side: BorderSide(color: secColor)))),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(width: screenw / 6),
-                                mainTextLeft("Already have a account ?",
-                                    Colors.white, 15, FontWeight.normal, 1),
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => Signin()));
-                                    },
-                                    child: Text(
-                                      "Sign in",
-                                      style:
-                                          TextStyle(color: mainColor, fontSize: 15),
-                                    ))
-                              ],
-                            ),
-                          ]))),
+                              child: mainText("Login", secColor, 13.0,
+                                  FontWeight.normal, 1)),
+                          Spacer()
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
             ),
-
-            loaderss(isHide, context)
+            loaderss(isHide, context),
           ],
         ),
-    )
+      ),
     );
   }
 
+  void goLogin() {
+    navScreen(logIn(), context, true);
+  }
+
+  void signup(BuildContext context) {
+    if(formKey.currentState!.validate()){
+      setState((){
+        isHide = true;
+      });
+      FinalSignUp(context);
+    }
+  }
+
   FinalSignUp(BuildContext context) async{
-    setState(() {
-      isHide = true;
-    });
     try{
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password)
@@ -365,10 +314,12 @@ class _SignupState extends State<Signup> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = _auth.currentUser;
     Map<String,String> item = {
-      "name":fullname,
+      "name":name,
       "email":email,
       "uid":user!.uid,
     };
+
+
 
     await firestore.collection("user")
         .doc(user.uid)
@@ -377,10 +328,10 @@ class _SignupState extends State<Signup> {
       isHide = false;
     });
     toaster("User created Succesfully");
-    navScreen(Signin(), context, true);
+    navScreen(logIn(), context, true);
+
   }
 
 
+
 }
-
-

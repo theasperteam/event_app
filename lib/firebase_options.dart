@@ -54,6 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:149713584952:android:db00507cd6addf7f3d37cd',
     messagingSenderId: '149713584952',
     projectId: 'event-app-c48c8',
+    databaseURL: 'https://event-app-c48c8-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'event-app-c48c8.appspot.com',
   );
 
@@ -62,6 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:149713584952:ios:64411fd45f7442213d37cd',
     messagingSenderId: '149713584952',
     projectId: 'event-app-c48c8',
+    databaseURL: 'https://event-app-c48c8-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'event-app-c48c8.appspot.com',
     iosClientId: '149713584952-dhgiq6mbhupcd0v6mqcgn18p94jek398.apps.googleusercontent.com',
     iosBundleId: 'com.asper.eventApp',

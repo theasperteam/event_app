@@ -1,19 +1,38 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
-import 'package:event_app/Usefull/date.dart';
-import 'package:event_app/screens/sign_in.dart';
+import 'package:event_app/Backend/backend.dart';
+import 'package:event_app/Data/CityandStates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../Backend/helper.dart';
 import '../Usefull/Colors.dart';
 import '../Usefull/Buttons.dart';
-import '../Usefull/Functions.dart';
-import '../Usefull/time.dart';
-// import 'package:draggable_bottom_sheet/draggable_bottom_sheet.dart';
+
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+
+import 'package:day_night_time_picker/day_night_time_picker.dart';
+import 'package:day_night_time_picker/lib/constants.dart';
+
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+
+import 'package:http/http.dart' as http;
+
+import '../Usefull/Functions.dart';
+
+
+
+
+
 
 class PostScreen extends StatefulWidget {
   const PostScreen({Key? key}) : super(key: key);
@@ -22,783 +41,1145 @@ class PostScreen extends StatefulWidget {
   State<PostScreen> createState() => _PostScreenState();
 }
 
-double screenh = 0;
-double screenw = 0;
-bool isHide = false;
-String? desc;
-String? title;
-String? ven_ue;
-
-TextEditingController desc_controller = TextEditingController();
-TextEditingController title_controller = TextEditingController();
-TextEditingController dur_controller = TextEditingController();
-TextEditingController venue_controller = TextEditingController();
-TextEditingController seat_controller = TextEditingController();
-TextEditingController price_controller = TextEditingController();
-
 final databaseRef = FirebaseDatabase.instance.reference();
 
 class _PostScreenState extends State<PostScreen> {
-  String event_date = "Select date";
-  DateTime? date;
-  String event_time = "Select time";
-  TimeOfDay? time;
-  String selectedCategory = "Online";
-  String selectedCategory1 = "Seminar";
-  int index = 0;
+  bool isHide = false;
+  String title = "";
+  String desc = "";
 
-  String _text = "";
-  String _mail = "";
+  bool multiday = false;
+  bool isDay = false;
+  List multibg = [bgColor,bgColor];
+  List multitext = [mainColor,mainColor];
+  
+  
+  DateTime date = DateTime.now();
+  String dateString = "Date";
+  bool isDate = false;
+
+  DateTime startDate = DateTime.now();
+  String startDatestring = "From";
+  bool isStartDate = false;
+
+
+  DateTime endDate = DateTime.now();
+  String endDateString = "To";
+  bool isendDate = false;
+
+  DateTime startTime = DateTime.now();
+  String startTimeString = "Start Time";
+  bool isStartTime = false;
+  Time _startTime = Time(hour: 11, minute: 00);
+
+
+  DateTime endTime = DateTime.now();
+  String endTimeString = "End Time";
+  bool isEndTime = false;
+  Time _endTime = Time(hour: 11, minute: 00);
+
+
+  bool online = false;
+  bool isType = false;
+  List typebg = [bgColor,bgColor];
+  List typetext = [mainColor,mainColor];
+
+  String city = "";
+  String state = "";
+  String place = "Select City";
+  bool isCity = false;
+  String venu = "";
+
+  int totalSeats = 0;
+
+  bool paid = false;
+  int price = 0;
+
+
+  final formKey = GlobalKey<FormState>();
+
+  List<Widget> stateList = [];
+  List<Widget> cityList = [];
+  List citiesList = [];
+  String number = "";
+
+
+  bool isCategory = false;
+  String category = "";
+  List<categoryItem> categoryList = [];
+
+  List categroyBg = [];
+  List categroyBgStock = [];
+  List categroyText = [];
+  List categroyTextStock = [];
+
+  String bannerImg = "";
+  int currentIndex = 0;
+  File bannerFile = File("");
+  List<Widget> allBanners = [];
+  bool isbannerFile = false;
+
+
+  final _messangerKey = GlobalKey<ScaffoldMessengerState>();
+
+
 
   @override
   void initState() {
     super.initState();
+    getCategory();
+    putBanners();
+  }
 
-    HelperFunctions.getuserNameSharePreference().then((value) {
-      setState(() {
-        _text = value.toString();
-      });
+
+  getCategory() async {
+    setState(() {
+      isHide = true;
     });
+    User? user = await FirebaseAuth.instance.currentUser;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    HelperFunctions.getuserEmailSharePreference().then((value) {
-      setState(() {
-        _mail = value.toString();
-      });
+    QuerySnapshot querySnapshot = await firestore
+        .collection('category')
+        .get();
+
+    if (querySnapshot != null) {
+      final allData = querySnapshot.docs.map((e) => e.data()).toList();
+      if (allData.length != 0) {
+        var b = allData[0] as Map<String, dynamic>;
+        print(b);
+        List category = b['category'];
+        for(var i in category){
+          categroyBg.add(bgColor);
+          categroyBgStock.add(bgColor);
+          categroyText.add(mainColor);
+          categroyTextStock.add(mainColor);
+
+          var a = categoryItem(title:i.toString().toUpperCase(),
+              callback:() {selectCategory(category.indexOf(i), i); },
+              bg:categroyBg[category.indexOf(i)],
+              text:categroyText[category.indexOf(i)]);
+          var s = SizedBox(width: 5.0,);
+
+          setState(() {
+            categoryList.add(a);
+            isHide = false;
+          });
+        }
+      }
+    }
+  }
+
+  selectCategory(int a, String s){
+    setState(() {
+      for(var i in categoryList){
+        setState(() {
+          if(s.toUpperCase() == i.title){
+            i.stateOfCategory.setState(() {
+              i.stateOfCategory.widget.bg = mainColor;
+              i.stateOfCategory.widget.text = Colors.white;
+              category = s;
+              isCategory = true;
+            });
+
+          }
+          else {
+            i.stateOfCategory.setState(() {
+              i.stateOfCategory.widget.bg = bgColor;
+              i.stateOfCategory.widget.text = mainColor;
+            });
+          }
+        });
+      }
+
+
+
     });
   }
 
-  String getText() {
-    if (date == null) {
-      return 'Select date';
-    } else {
-      return "${date?.month}/${date?.day}/${date?.year}";
-    }
-  }
 
-  List<String> categoryList = ['Offline', 'Online'];
-  List<String> categoryList1 = [
-    'Hackathon',
-    'Seminar',
-    'Workshops',
-    'Cultural'
-  ];
-
-  List<DropdownMenuItem<String>> getDropDownItems() {
-    List<DropdownMenuItem<String>> dropDownItems = [];
-
-    for (int i = 0; i < categoryList.length; i++) {
-      String cat = categoryList[i];
-      var newItem = DropdownMenuItem(
-        child: Text(cat),
-        value: cat,
+  putBanners(){
+    for(int i = 0;i<=5;i++){
+      var a = GestureDetector(
+        onTap: (){
+          setState(() {
+            currentIndex = i;
+            bannerFile = File("");
+          });
+        },
+        child: banners(i, "", "", 100.0),
       );
-      dropDownItems.add(newItem);
+      var s = SizedBox(width: 5.0,);
+      
+      setState(() {
+        allBanners.add(a);
+        allBanners.add(s);
+      });
+      
     }
-    return dropDownItems;
   }
 
-  List<DropdownMenuItem<String>> getDropDownItems1() {
-    List<DropdownMenuItem<String>> dropDownItems1 = [];
+  customBanner() async {
+    PickedFile? pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
 
-    for (int i = 0; i < categoryList1.length; i++) {
-      String cat = categoryList1[i];
-      var newItem = DropdownMenuItem(
-        child: Text(cat),
-        value: cat,
-      );
-      dropDownItems1.add(newItem);
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      print(file.path);
+      cropSquare(File(pickedFile.path), context);
+      // uploadFile(file.path, context);
     }
-    return dropDownItems1;
   }
+
+  Future cropSquare(File imageFile, BuildContext context) async {
+    CroppedFile? a = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 512, ratioY: 200),
+        aspectRatioPresets: [CropAspectRatioPreset.square]);
+
+    setState(() {
+      bannerFile = File(a!.path);
+      print(a.path);
+    });
+  }
+
+  late BuildContext mCtx;
+
 
   @override
   Widget build(BuildContext context) {
-    screenh = MediaQuery.of(context).size.height;
-    screenw = MediaQuery.of(context).size.width;
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-                padding: const EdgeInsets.all(20.0),
+
+    mCtx = context;
+
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: formKey,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                              alignment: Alignment.topLeft,
-                              child: mainTextLeft("Post Event", secColor, 30,
-                                  FontWeight.w700, 1)),
-                          Expanded(child: Container()),
-                          borderbtnsss('Post', () {
-                            if (desc_controller.text.isNotEmpty &&
-                                title_controller.text.isNotEmpty &&
-                                price_controller.text.isNotEmpty &&
-                                ((selectedCategory == "Offline" &&
-                                        venue_controller.text.isNotEmpty) ||
-                                    selectedCategory == "Online") &&
-                                seat_controller.text.isNotEmpty &&
-                                dur_controller.text.isNotEmpty &&
-                                event_date != "Select date" &&
-                                event_time != "Select time") {
-                              insertData(
-                                  'Bhopal',
-                                  generateRandomString(10),
-                                  desc_controller.text,
-                                  title_controller.text,
-                                  dur_controller.text,
-                                  venue_controller.text,
-                                  seat_controller.text,
-                                  price_controller.text,
-                                  event_date.toString(),
-                                  selectedCategory,
-                                  _text,
-                                  event_time.toString(),
-                                  selectedCategory1);
-                              event_date = "Select date";
-                              event_time = "Select time";
-                              selectedCategory1 = "Seminar";
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: bgColor,
-                                  content: Text(
-                                    "Please fill all the details",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  duration: Duration(seconds: 2),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Stack(
+                          children: [
+                            banners(currentIndex, bannerImg, bannerFile.path, MediaQuery.of(context).size.width),
+                            Container(
+                              alignment: Alignment.topRight,
+                              child: IconButton(
+                                  onPressed: (){
+                                    customBanner();
+                                  },
+                                  icon: Icon(Iconsax.edit,color: Colors.white,)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 10.0,),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: allBanners,
+                        ),
+                      ),
 
-                                  width: 280.0, // Width of the SnackBar.
-                                  padding: const EdgeInsets.all(10),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(7.0),
-                                  ),
-                                ),
-                              );
-                            }
-                          }, secColor)
-                        ],
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
                       TextFormField(
-                        controller: desc_controller,
-                        key: ValueKey('description'),
-                        maxLines: 4,
-                        minLines: 1,
+                        maxLength: 50,
+                        style: TextStyle(
+                            color: textColor,
+                            fontSize: 25.0,
+                            fontFamily: 'mons'),
                         decoration: InputDecoration(
-                            hintText: "What is the event all about?"),
-                        onSaved: (value) {
+                          counterText: "",
+                          hintText: "Post Event",
+                          hintStyle: TextStyle(
+                            fontFamily: 'mons',
+                            fontSize: 25.0,
+                            color: lightGrey,
+                          ),
+                          errorStyle: TextStyle(
+                            color: errorColor,
+                            fontFamily: 'mons',
+                            fontSize: 10.0,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: errorColor,width: 0),
+
+                          ),
+                        ),
+                        onChanged: (text){
                           setState(() {
-                            desc = value!;
+                            title = text;
                           });
-                          print(desc);
+                          },
+                        validator: (text){
+                          if(text!.isEmpty){
+                            return("Please Enter a Title");
+                          }
+                        },
+
+                      ),
+                      SizedBox(height: 10.0,),
+                      TextFormField(
+                        minLines: 1,
+                        maxLines: 5,
+                        maxLength: 200,
+                        style: TextStyle(
+                            color: lightGrey,
+                            fontSize: 15.0,
+                            fontFamily: 'mons'),
+                        decoration: InputDecoration(
+                          counterText: "",
+                          hintText: "Tell us more about the Event",
+                          hintStyle: TextStyle(
+                            fontFamily: 'mons',
+                            fontSize: 15.0,
+                            color: lightGrey,
+                          ),
+                          errorStyle: TextStyle(
+                            color: errorColor,
+                            fontFamily: 'mons',
+                            fontSize: 10.0,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: errorColor,width: 0),
+
+                          ),
+                        ),
+                        onChanged: (text){
+                          setState(() {
+                            desc = text;
+                          });
+                          },
+                        validator: (text){
+                          if(text!.isEmpty){
+                            return("Please Enter a Desc");
+                          }
                         },
                       ),
-                    ])),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
-            height: MediaQuery.of(context).size.height * 0.68,
-            width: MediaQuery.of(context).size.width,
-            color: bgLight,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    height: 4,
-                    width: 60,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.white),
-                  ),
-                ),
-                SizedBox(
-                  height: 50,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.access_time_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return simpleDialogBox();
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Schedule", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.title_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return titleDialogBox("Title of the event",
-                                  title_controller, "title");
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Title", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.title_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return titleDialogBox(
-                                  "Total seats", seat_controller, "seats");
-                            });
-                      },
-                      child: mainTextLeft(
-                          " Total Seats", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.title_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return titleDialogBox("Price per ticket",
-                                  price_controller, "price");
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Price", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.title_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return durationDialogBox();
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Duration", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.title_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return locationDialogBox();
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Location", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.access_time_rounded),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return catDialogBox();
-                            });
-                      },
-                      child: mainTextLeft(
-                          "Category", mainColor, 15, FontWeight.w400, 1),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+
+                      SizedBox(height: 15.0,),
+
+                      mainText("The event is?", lightGrey, 10.0, FontWeight.normal, 1),
+                      Row(
+                        children: [
+                          Expanded(child: selectbtnsss("Single Day Event", () { changeMulti(0);}, multibg[0], multitext[0])),
+                          SizedBox(width: 5.0,),
+                          Expanded(child: selectbtnsss("Multi Day Event", () { changeMulti(1);}, multibg[1], multitext[1])),
+                        ],
+                      ),
+                      SizedBox(height: 10.0,),
+
+
+                     Visibility(
+                       visible: isDay && !multiday,
+                          child: selectbtnsss(dateString,(){pickDate();},bgColor,mainColor)),
+                      Visibility(
+                          visible: isDay && multiday,
+                          child: Row(
+                            children: [
+                              Expanded(child: selectbtnsss(startDatestring,(){pickstartDate();},bgColor,mainColor)),
+                              SizedBox(width: 5.0,),
+                              Expanded(child: selectbtnsss(endDateString,(){pickendDate();},bgColor,mainColor)),
+                            ],
+                          )),
+                      SizedBox(height: 10.0,),
+
+                      mainText("event time", lightGrey, 10.0, FontWeight.normal, 1),
+                      Row(
+                        children: [
+                          Expanded(child: selectbtnsss(startTimeString, () { startTimePicker();}, bgColor, mainColor)),
+                          SizedBox(width: 5.0,),
+                          Expanded(child: selectbtnsss(endTimeString, () { endTimePicker();}, bgColor, mainColor)),
+                        ],
+                      ),
+
+                      SizedBox(height: 10.0,),
+                      mainText("Online or Offline?", lightGrey, 10.0, FontWeight.normal, 1),
+                      Row(
+                        children: [
+                          Expanded(child: selectbtnsss("Online", () {changeType(0);}, typebg[0], typetext[0])),
+                          SizedBox(width: 5.0,),
+                          Expanded(child: selectbtnsss("Offline", () {changeType(1);}, typebg[1], typetext[1])),
+                        ],
+                      ),
+
+                      SizedBox(height: 10.0,),
+                      Visibility(
+                           visible: isType && !online,
+                           child: Column(
+                             crossAxisAlignment: CrossAxisAlignment.start,
+                             children: [
+                               mainText("Where?", lightGrey, 10.0, FontWeight.normal, 1),
+                               selectbtnsss(place, () { ShowStateCityPicker(context);}, bgColor, mainColor),
+                               SizedBox(height: 5.0,),
+                               TextFormField(
+                                 minLines: 1,
+                                 maxLines: 2,
+                                 maxLength: 200,
+                                 style: TextStyle(
+                                     color: lightGrey,
+                                     fontSize: 13.0,
+                                     fontFamily: 'mons'),
+                                 decoration: InputDecoration(
+                                   counterText: "",
+                                   hintText: "Where event is talking place?",
+                                   hintStyle: TextStyle(
+                                     fontFamily: 'mons',
+                                     fontSize: 13.0,
+                                     color: lightGrey,
+                                   ),
+                                   errorStyle: TextStyle(
+                                     color: errorColor,
+                                     fontFamily: 'mons',
+                                     fontSize: 10.0,
+                                   ),
+                                   enabledBorder: UnderlineInputBorder(
+                                     borderSide: BorderSide(color: textColor,width: 0),
+
+                                   ),
+                                   focusedBorder: UnderlineInputBorder(
+                                     borderSide: BorderSide(color: textColor,width: 0),
+
+                                   ),
+                                   errorBorder: UnderlineInputBorder(
+                                     borderSide: BorderSide(color: errorColor,width: 0),
+
+                                   ),
+                                 ),
+                                 onChanged: (text){
+                                   setState(() {
+                                     venu = text;
+                                   });
+                                 },
+                                 validator: (text){
+                                   if(text!.isEmpty){
+                                     return("Please Enter a Venu");
+                                   }
+                                 },
+                               ),
+
+                             ],
+                           )),
+
+                      SizedBox(height: 10.0,),
+                      TextFormField(
+                        maxLength: 3,
+                        keyboardType: TextInputType.number,
+                        style: TextStyle(
+                            color: lightGrey,
+                            fontSize: 15.0,
+                            fontFamily: 'mons'),
+                        decoration: InputDecoration(
+                          counterText: "",
+                          hintText: "Capacity",
+                          hintStyle: TextStyle(
+                            fontFamily: 'mons',
+                            fontSize: 15.0,
+                            color: lightGrey,
+                          ),
+                          errorStyle: TextStyle(
+                            color: errorColor,
+                            fontFamily: 'mons',
+                            fontSize: 10.0,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: textColor,width: 0),
+
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: errorColor,width: 0),
+
+                          ),
+                        ),
+                        onChanged: (text){
+                          setState(() {
+                            totalSeats = int.parse(text);
+                          });
+                        },
+                        validator: (text){
+                          if(text!.isEmpty){
+                            return("Please Enter Total Seats");
+                          }
+                        },
+                      ),
+                      SizedBox(height: 10.0,),
+                      mainText("Category", lightGrey, 10.0, FontWeight.normal, 1),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: categoryList,
+                        ),
+                      ),
+                      SizedBox(height: 15.0,),
+
+                      fullbtnsss("POST EVENT", () {postNow();}, mainColor, textColor),
+                    ]),
+              )),
+        ),
+        loaderss(isHide, context)
+      ],
     );
-    // loaderss(isHide, context)
   }
 
-  Widget simpleDialogBox() {
-    return Dialog(
-      child: Padding(
-        padding: EdgeInsets.all(30),
-        child: SizedBox(
-          height: 250,
-          width: 150,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Date and Time',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              Text('Date :'),
-              StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
+  postNow(){
+    // postFinalData("");
+    if(formKey.currentState!.validate()){
+      if(!isDay){
+        snacker("Please Select Event Days", mCtx);
+      }
+      else if(!isDate && !multiday){
+        snacker("Please Select Event Date", mCtx);
+      }
+      else if(!isStartDate && multiday){
+        snacker("Please Select Event Start Date", mCtx);
+      }
+      else if(!isendDate && multiday){
+        snacker("Please Select Event End Date", mCtx);
+      }
+      else if(!isStartTime){
+        snacker("Please Select Event Start Time", mCtx);
+      }
+      else if(!isType){
+        snacker("Please Select Event is Online or Offline", mCtx);
+      }
+      else if(!isCity && !online){
+        snacker("Please Select Event City", mCtx);
+      }
+      else if(!isCategory){
+        snacker("Please Select Event Category", mCtx);
+      }
+      else{
+        UploadPhoto(bannerFile.path);
+      }
+    }
+  }
+
+  UploadPhoto(String file) async{
+    setState((){
+      isHide = true;
+    });
+    if(file != "") {
+      String url = "https://api.imgbb.com/1/upload?key=2c603ad4d5a3be453e36628616d29057";
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+      request.files.add(http.MultipartFile('image',
+          File(file).readAsBytes().asStream(), File(file).lengthSync(),
+          filename: file
+              .split("/")
+              .last
+      ));
+      // var response = await request.send();
+      http.Response response = await http.Response.fromStream(await request.send());
+
+      // print(response.headers);
+      print(response.body);
+      Map responseData = json.decode(response.body);
+      String imgUrl = responseData['data']['url'];
+      postFinalData(imgUrl);
+      // print(await response.stream.bytesToString());
+
+    }
+    else{
+      setState((){
+        isHide = true;
+      });
+      postFinalData("");
+    }
+  }
+
+  postFinalData(String imgUrl){
+
+    print("batman");
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    String key = generateRandomString(15);
+    Map<String, dynamic> Item = {
+      'title':title,
+      'desc':desc,
+      'multiday':multiday,
+      'date':date.toString(),
+      'startDate':startDate.toString(),
+      'endDate':endDate.toString(),
+      'sartTime':startTime.toString(),
+      'endTime':endTime.toString(),
+      'online':online,
+      'city': place,
+      'venu':venu,
+      'capacity':totalSeats,
+      'category':category,
+      'index':currentIndex,
+      'from': auth.currentUser!.uid,
+      'img':imgUrl
+    };
+
+    Map<String, dynamic> mainItem = {key:Item};
+
+      final ref = FirebaseDatabase.instance.reference();
+      ref.child('event').update(mainItem).then((value) =>
+      {
+        postToCategory(key, category)
+      });
+
+
+  }
+
+  postToCategory(String id,String cat) async{
+    Map<String,dynamic> item = {
+      id:id
+    };
+
+    final ref = FirebaseDatabase.instance.reference();
+    ref.child('category').child(cat).update(item).then((value) => {
+      puttoUser(id)
+    });
+  }
+
+  puttoUser(String id) async{
+    Map<String,dynamic> item = {
+      id:id
+    };
+
+    User? user = FirebaseAuth.instance.currentUser;
+    final ref = FirebaseDatabase.instance.reference();
+    ref.child('userEvent').child(user!.uid).update(item).then((value) => {
+      setState((){
+        puttoCity(id);
+      })
+    });
+  }
+
+  puttoCity(String id){
+    if(!online) {
+      Map<String, dynamic> item = {
+        id: id
+      };
+
+      final ref = FirebaseDatabase.instance.reference();
+      ref.child('cityEvent').child(place).update(item).then((value) =>
+      {
+        setState(() {
+          toaster("Event Posted Successfully");
+          checker(context);
+        })
+      });
+    }
+    else{
+      setState(() {
+        toaster("Event Posted Successfully");
+        checker(context);
+      });
+    }
+  }
+
+
+
+  startTimePicker() async {
+    Navigator.push(
+        context,
+        showPicker(
+            context: context,
+            value: _startTime,
+            onChange: (times) {
+              setState(
+                    () {
+                  _startTime = times;
+                },
+              );
+            },
+            onChangeDateTime: (dateTime) {
+              setState(() {
+                startTimeString = DateFormat('HH:mm').format(dateTime).toString();
+                isStartTime = true;
+              });
+            },
+            // minuteInterval: MinuteInterval.FIVE
+           ));
+  }
+
+  endTimePicker() async {
+    if(isStartTime) {
+      Navigator.push(
+          context,
+          showPicker(
+            context: context,
+            value: _endTime.replacing(
+                hour: _startTime.hour, minute: _startTime.minute),
+            onChange: (times) {
+              setState(
+                    () {
+                  _endTime = times;
+                },
+              );
+            },
+            onChangeDateTime: (dateTime) {
+              setState(() {
+                endTimeString = DateFormat('HH:mm').format(dateTime).toString();
+                isEndTime = true;
+              });
+            },
+            // minuteInterval: MinuteInterval.FIVE
+          ));
+    }
+    else{
+      toaster("Please Select a Start Time");
+    }
+  }
+
+
+  changeMulti(int a){
+    setState(() {
+      multibg = [bgColor,bgColor];
+      multitext = [mainColor,mainColor];
+      
+      multibg[a] = mainColor;
+      multitext[a] = textColor;
+      isDay = true;
+      if(a == 0){
+        multiday = false;
+      }
+      else{
+        multiday = true;
+      }
+    });
+  }
+
+  changeType(int a){
+    setState(() {
+      typebg = [bgColor,bgColor];
+      typetext = [mainColor,mainColor];
+
+      typebg[a] = mainColor;
+      typetext[a] = textColor;
+      isType = true;
+      if(a == 0){
+        online = true;
+      }
+      else{
+        online = false;
+      }
+    });
+  }
+
+  void pickDate() async {
+    DatePicker.showDatePicker(context,
+        showTitleActions: true,
+        minTime: DateTime.now(),
+        maxTime: DateTime(2030),
+        currentTime: DateTime.now(),
+        onChanged: (date) {
+          if (date != null) {
+            print(date);
+          }
+        },
+        onConfirm: (datee){
+          if (date != null) {
+            String formattedDob = DateFormat('EEE dd MMM yyyy').format(datee);
+            setState(() {
+              date = datee;
+              dateString = formattedDob;
+              isDate = true;
+            });
+          }
+        });
+  }
+
+  void pickstartDate() async {
+    DatePicker.showDatePicker(context,
+        showTitleActions: true,
+        minTime: DateTime.now(),
+        maxTime: DateTime(2030),
+        currentTime: DateTime.now(),
+        onChanged: (date) {
+          if (date != null) {
+            print(date);
+          }
+        },
+        onConfirm: (date){
+          if (date != null) {
+            String formattedDob = DateFormat('EEE dd MMM yyyy').format(date);
+            setState(() {
+              startDatestring = formattedDob;
+              isStartDate = true;
+              startDate = date;
+            });
+          }
+        });
+  }
+
+  void pickendDate() async {
+    if (isStartDate) {
+      DatePicker.showDatePicker(context,
+          showTitleActions: true,
+          minTime: startDate.add(Duration(days: 1)),
+          maxTime: DateTime(2030),
+          currentTime: startDate.add(Duration(days: 1)),
+          onChanged: (date) {
+            if (date != null) {
+              print(date);
+            }
+          },
+          onConfirm: (date){
+            if (date != null) {
+              String formattedDob = DateFormat('EEE dd MMM yyyy').format(date);
+              setState(() {
+                endDateString = formattedDob;
+                isendDate = true;
+                endDate = date;
+              });
+            }
+          });
+    }
+  else{
+    toaster("Please Select a Start Date");
+  }
+  }
+
+  ShowStateCityPicker(BuildContext ctx){
+
+    state = "";
+    super.setState(() {
+      citiesList = [];
+    });
+    for(var i in allStates){
+      var a = ListTile(
+        title: Row(
+          children: [
+            mainText(i, textDark, 15.0, FontWeight.normal, 1),
+            Spacer(),
+          ],
+        ),
+        leading: Icon(Iconsax.map,color: mainColor,),
+        onTap: (){
+          state = i;
+          Navigator.pop(context);
+          ShowCityPicker(context,i);
+        },
+      );
+      setState(() {
+        stateList.add(a);
+      });
+    }
+
+    showBarModalBottomSheet(context: ctx,
+        builder: (context){
+          return
+            StatefulBuilder(builder: (BuildContext context,StateSetter setState){
+              return Container(
+                // height: 200.0,
+                padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 10.0),
+                child: Column(
                   children: [
-                    borderbtnsss(event_date, () async {
-                      final initialDate = DateTime.now();
-                      final newDate = await showDatePicker(
-                        context: context,
-                        initialDate: date ?? initialDate,
-                        firstDate: DateTime(DateTime.now().year - 5),
-                        lastDate: DateTime(DateTime.now().year + 5),
-                      );
+                    TextFormField(
+                      maxLength: 36,
+                      keyboardType:TextInputType.text,
+                      cursorColor: mainColor,
 
-                      if (newDate == null) return;
+                      style: TextStyle(
+                        fontFamily: 'mons',
+                        fontSize: 15.0,
+                        color: mainColor,
+                      ),
+                      decoration: InputDecoration(
+                          labelText: "State",
+                          counterText: "",
+                          prefixIcon: Icon(Iconsax.search_favorite,color: mainColor,),
+                          hintStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color:secColor
+                          ),
+                          labelStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color:secColor
+                          ),
+                          errorStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color: errorColor
+                          ),
+                          errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
 
-                      setState(() {
-                        date = newDate;
-                        event_date = DateFormat('MM/dd/yyyy').format(date!);
-                        // super.setState(() {});
-                      });
-                    }, secColor)
-                  ],
-                );
-              }),
-              SizedBox(
-                height: 10,
-              ),
-              Text('Time: '),
-              StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    borderbtnsss(event_time, () async {
-                      final initialTime = TimeOfDay(hour: 9, minute: 0);
-                      final newTime = await showTimePicker(
-                        context: context,
-                        initialTime: time ?? initialTime,
-                      );
+                                  color: errorColor
+                              )
+                          ),
+                          focusedBorder:  OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
 
-                      if (newTime == null) return;
+                                  color: secColor
+                              )
+                          ),
+                          border:  OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
 
-                      setState(() {
-                        time = newTime;
-                        event_time =
-                            "${time?.hour}:${time?.minute}  ${time?.period.name}";
-                      });
-                    }, secColor)
-                  ],
-                );
-              }),
-              SizedBox(
-                height: 40,
-              ),
-              Row(
-                children: [
-                  Expanded(child: Container()),
-                  GestureDetector(
-                    onTap: () {
-                      if ((event_date == "Select date") ||
-                          (event_time == "Select time")) {
-                        String text;
-                        if ((event_date == "Select date") &&
-                            (event_time == "Select time")) {
-                          text = "Please select date and time";
-                        } else if ((event_date == "Select date")) {
-                          text = "Please select date";
-                        } else {
-                          text = "Please select time";
+                                  color: mainColor
+                              )
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
+
+                                  color: mainColor
+                              )
+                          )
+                      ),
+
+                      onChanged: (text){
+                        setState(() {
+                          stateList = [];
+                        });
+                        for(var i in allStates){
+                          if(i.toString().toUpperCase().contains(text.toUpperCase())){
+                            var a = ListTile(
+                              title: Row(
+                                children: [
+                                  mainText(i, textDark, 15.0, FontWeight.normal, 1),
+                                  Spacer(),
+                                ],
+                              ),
+                              leading: Icon(Iconsax.map,color: mainColor,),
+                              onTap: (){
+                                state = i;
+                                Navigator.pop(context);
+                                ShowCityPicker(context,i);
+                              },
+                            );
+                            setState(() {
+                              stateList.add(a);
+                            });
+                          }
                         }
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: bgColor,
-                            content: Text(
-                              text,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            duration: Duration(seconds: 2),
-
-                            width: 280.0, // Width of the SnackBar.
-                            padding: const EdgeInsets.all(10),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7.0),
-                            ),
-                          ),
-                        );
-                      } else {
-                        // var players = fire
-                        Navigator.pop(context);
-                      }
-
-                      print(event_time.isEmpty);
-                      print(event_date);
-                    },
-                    child: mainText("ok", mainColor, 15, FontWeight.w400, 1),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget titleDialogBox(
-      String txt, TextEditingController controller, String key) {
-    return Dialog(
-      child: Padding(
-        padding: EdgeInsets.all(30),
-        child: SizedBox(
-          height: 130,
-          width: 150,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                txt,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 17, color: secColor),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: controller,
-                key: ValueKey('${key}'),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child:
-                        mainText("cancel", mainColor, 15, FontWeight.w400, 1),
-                  ),
-                  Expanded(child: Container()),
-                  GestureDetector(
-                    onTap: () {
-                      String txt = controller.text;
-                      if (txt == "") {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: bgColor,
-                            content: Text(
-                              "Please enter the ${key}",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            duration: Duration(seconds: 2),
-
-                            width: 280.0, // Width of the SnackBar.
-                            padding: const EdgeInsets.all(10),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7.0),
-                            ),
-                          ),
-                        );
-                      } else {
-                        Navigator.pop(context);
-                      }
-
-                      print(txt);
-                      print(event_date);
-                    },
-                    child: mainText("ok", mainColor, 15, FontWeight.w400, 1),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget durationDialogBox() {
-    return Dialog(
-      child: Padding(
-        padding: EdgeInsets.all(30),
-        child: SizedBox(
-          height: 130,
-          width: 150,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Duration ',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 20, color: secColor),
-              ),
-              TextFormField(
-                controller: dur_controller,
-                key: ValueKey('duration'),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child:
-                        mainText("cancel", mainColor, 15, FontWeight.w400, 1),
-                  ),
-                  Expanded(child: Container()),
-                  GestureDetector(
-                    onTap: () {
-                      String txt = dur_controller.text;
-                      if (txt == "") {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: bgColor,
-                            content: Text(
-                              "Please enter the duration",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            duration: Duration(seconds: 2),
-
-                            width: 280.0, // Width of the SnackBar.
-                            padding: const EdgeInsets.all(10),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7.0),
-                            ),
-                          ),
-                        );
-                      } else {
-                        // databaseRef.child("path").set
-                        Navigator.pop(context);
-                      }
-
-                      print(txt);
-                      print(event_date);
-                    },
-                    child: mainText("ok", mainColor, 15, FontWeight.w400, 1),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget locationDialogBox() {
-    return StatefulBuilder(builder:
-        (BuildContext context, void Function(void Function()) setState) {
-      return Dialog(
-          child: Padding(
-              padding: EdgeInsets.all(30),
-              child: SizedBox(
-                height: isHide ? 230 : 130,
-                width: 150,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mode',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          color: secColor),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    DropdownButton<String>(
-                      menuMaxHeight: 350,
-                      dropdownColor: Colors.grey,
-                      style: TextStyle(color: Colors.white, fontSize: 17),
-                      value: selectedCategory,
-                      items: getDropDownItems(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value as String;
-                          if (selectedCategory == "Offline") {
-                            isHide = true;
-                          } else {
-                            isHide = false;
-                          }
-                          for (int i = 0; i < categoryList.length; i++) {
-                            if (selectedCategory == categoryList[i]) {
-                              index = i;
-                            }
-                          }
-                        });
-
-                        print(isHide);
                       },
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    venue(isHide),
-                    SizedBox(
-                      height: isHide ? 40 : 5,
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: mainText(
-                              "cancel", mainColor, 15, FontWeight.w400, 1),
-                        ),
-                        Expanded(child: Container()),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            print(event_date);
-                          },
-                          child:
-                              mainText("ok", mainColor, 15, FontWeight.w400, 1),
-                        ),
-                      ],
-                    ),
+                    SizedBox(height: 5.0,),
+                    Expanded(child: SingleChildScrollView(
+                      child: Column(
+                        children: stateList,
+                      ),
+                    ))
                   ],
                 ),
-              )));
-    });
+              );
+
+            });
+        });
   }
 
-  Widget catDialogBox() {
-    return StatefulBuilder(builder:
-        (BuildContext context, void Function(void Function()) setState) {
-      return Dialog(
-          child: Padding(
-              padding: EdgeInsets.all(30),
-              child: SizedBox(
-                height: 130,
-                width: 150,
+  ShowCityPicker(BuildContext ctx,String statess){
+
+    city = "";
+
+    for(var x in citydatbase){
+      if(x['state'] == statess){
+        var citiesItem = ListTile(
+          leading: Icon(Iconsax.building,color: mainColor,),
+          title: Row(
+            children: [
+              mainText(x['city'], textDark, 15.0, FontWeight.normal, 1),
+            ],
+          ),
+          onTap: (){
+            super.setState(() {
+              city = x['city'];
+              isCity = true;
+              place = "$city, $state";
+              citiesList = [];
+              cityList = [];
+            });
+            Navigator.pop(context);
+          },
+        );
+        super.setState(() {
+          cityList.add(citiesItem);
+          citiesList.add(x['city']);
+        });
+      }
+    }
+
+
+    showBarModalBottomSheet(context: ctx,
+        builder: (context){
+          return
+            StatefulBuilder(builder: (BuildContext context,StateSetter setState){
+              return Container(
+                // height: 200.0,
+                padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 10.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Category',
+                    TextFormField(
+                      maxLength: 36,
+                      keyboardType:TextInputType.text,
+                      cursorColor: mainColor,
+
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          color: secColor),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    DropdownButton<String>(
-                      menuMaxHeight: 350,
-                      dropdownColor: Colors.grey,
-                      style: TextStyle(color: Colors.white, fontSize: 17),
-                      value: selectedCategory1,
-                      items: getDropDownItems1(),
-                      onChanged: (value) {
+                        fontFamily: 'mons',
+                        fontSize: 15.0,
+                        color: mainColor,
+                      ),
+                      decoration: InputDecoration(
+                          labelText: "Cities",
+                          counterText: "",
+                          prefixIcon: Icon(Iconsax.search_favorite,color: mainColor,),
+                          hintStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color:secColor
+                          ),
+                          labelStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color:secColor
+                          ),
+                          errorStyle: TextStyle(
+                              fontFamily: 'mons',
+                              color: errorColor
+                          ),
+                          errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
+
+                                  color: errorColor
+                              )
+                          ),
+                          focusedBorder:  OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
+
+                                  color: secColor
+                              )
+                          ),
+                          border:  OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
+
+                                  color: mainColor
+                              )
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                              borderSide: BorderSide(
+
+                                  color: mainColor
+                              )
+                          )
+                      ),
+
+                      onChanged: (text){
                         setState(() {
-                          selectedCategory1 = value as String;
-                          for (int i = 0; i < categoryList1.length; i++) {
-                            if (selectedCategory1 == categoryList1[i]) {
-                              index = i;
-                            }
-                          }
+                          cityList = [];
                         });
+                        for(var i in citiesList){
+                          if(i.toString().toUpperCase().contains(text.toUpperCase())){
+                            var a = ListTile(
+                              title: Row(
+                                children: [
+                                  mainText(i, textDark, 15.0, FontWeight.normal, 1),
+                                  Spacer(),
+                                ],
+                              ),
+                              leading: Icon(Iconsax.location,color: mainColor,),
+                              onTap: (){
+                                super.setState(() {
+                                  city = i;
+                                  place = "$city, $state";
+                                  isCity = true;
+                                  citiesList = [];
+                                  cityList = [];
+                                });
+                                Navigator.pop(context);
+                              },
+                            );
+                            setState(() {
+                              cityList.add(a);
+                            });
+                          }
+                        }
+
                       },
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: mainText(
-                              "cancel", mainColor, 15, FontWeight.w400, 1),
-                        ),
-                        Expanded(child: Container()),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            print(event_date);
-                          },
-                          child:
-                              mainText("ok", mainColor, 15, FontWeight.w400, 1),
-                        ),
-                      ],
-                    ),
+                    SizedBox(height: 5.0,),
+                    Expanded(child: SingleChildScrollView(
+                      child: Column(
+                        children: cityList,
+                      ),
+                    ))
                   ],
                 ),
-              )));
-    });
+              );
+
+            });
+        });
   }
 
-  Widget venue(bool a) {
-    return Visibility(
-        visible: a,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Venue',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 17, color: secColor),
-            ),
-            TextFormField(
-              controller: venue_controller,
-              key: ValueKey('Venue'),
-            ),
-          ],
-        ));
+}
+
+class categoryItem extends StatefulWidget {
+  String title;
+  Color bg;
+  Color text;
+  VoidCallback callback;
+  categoryItem({Key? key,required this.title,required this.bg,required this.text,required this.callback}) : super(key: key);
+
+  late _categoryItemState stateOfCategory;
+
+  @override
+  State<categoryItem> createState() {
+    stateOfCategory = _categoryItemState();
+    return stateOfCategory;
   }
 }
+
+class _categoryItemState extends State<categoryItem> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(right: 5.0),
+      child: ElevatedButton(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(3, 0, 3, 0),
+          child: Row(
+            children: [
+              mainText(widget.title, widget.text, 13.0, FontWeight.normal, 1),
+            ],
+          ),
+        ),
+        style: ButtonStyle(
+            foregroundColor:
+            MaterialStateProperty.all<Color>(widget.bg),
+            backgroundColor:
+            MaterialStateProperty.all<Color>(widget.bg),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                    side: BorderSide(color: widget.text, width: 2.0)))),
+        onPressed: widget.callback,
+      ),
+    );
+  }
+}
+
